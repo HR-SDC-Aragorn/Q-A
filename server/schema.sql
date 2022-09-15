@@ -1,23 +1,27 @@
+CREATE DATABASE qa;
+
+\c qa;
+
 CREATE TABLE questions (
-  id serial PRIMARY KEY,
+  question_id serial PRIMARY KEY,
   product_id serial,
-  body VARCHAR(1000),
-  date_written TIMESTAMP,
+  question_body VARCHAR(1000),
+  question_date BIGINT,
   asker_name VARCHAR(60),
   asker_email VARCHAR (60),
   reported BOOLEAN,
-  helpful INT NOT NULL
+  question_helpfulness INT NOT NULL
 );
 
 CREATE TABLE answers (
   id serial PRIMARY KEY,
-  question_id serial references questions(id),
+  question_id serial references questions(question_id),
   body VARCHAR(1000),
-  date_written TIMESTAMP,
+  date BIGINT,
   answerer_name VARCHAR(60),
   answerer_email VARCHAR(60),
   reported BOOLEAN,
-  helpful INT NOT NULL
+  helpfulness INT NOT NULL
 );
 
 CREATE TABLE photos (
