@@ -36,7 +36,7 @@ app.get('/qa/questions', (req, res) => {
                 'date', date,
                 'answerer_name', answerer_name,
                 'helpfulness', helpfulness,
-                'photos', (SELECT json_agg(photos.url) from photos WHERE answer_id = answers.id)
+                'photos', (SELECT COALESCE (json_agg(photos.url), '[]'::json) FROM photos WHERE answer_id = answers.id)
                 )) from answers WHERE question_id = questions.question_id)
         )) from questions WHERE product_id = ${req.query.product_id})
       )`
@@ -63,7 +63,7 @@ app.get('/qa/questions/:question_id/answers', (req, res) => {
             'date', date,
             'answerer_name', answerer_name,
             'helpfulness', helpfulness,
-            'photos', (SELECT json_agg(photos.url) FROM photos WHERE answer_id = answers.id)
+            'photos', (SELECT COALESCE (json_agg(photos.url), '[]'::json) FROM photos WHERE answer_id = answers.id)
           )
         ) FROM answers WHERE question_id = ${req.params.question_id})
       )`
@@ -73,13 +73,35 @@ app.get('/qa/questions/:question_id/answers', (req, res) => {
   })
 });
 
-// app.post('/qa/questions', (req, res) => {
+app.post('/qa/questions', (req, res) => {
+  console.log(req.body);
+  const params = [req.body.product_id, req.body.body, req.body.name, req.body.email, 0, 0];
+  const queryStr = `INSERT INTO questions (product_id, question_body, question_date, asker_name, asker_email, reported, question_helpfulness) VALUES ($1, $2, to_timestamp(${Date.now()/1000}), $3 ,$4, $5, $6)`
+  // error: duplicate key value violates unique constraint "questions_pkey"
+  // Timestamp wrong format?
+  pool.query(queryStr, params)
+  .then(() => {
+    res.sendStatus(201);
+  })
+});
 
-// });
-
-// app.post('/qa/questions/:question_id/answers', (req, res) => {
-
-// });
+app.post('/qa/questions/:question_id/answers', (req, res) => {
+  console.log("req.params.question_id", req.params.question_id);
+  console.log("req.body", req.body);
+  const params = [req.params.question_id, req.body.body, req.body.name, req.body.email, req.body.photos, 0, 0];
+  const photos = [req.body.photos];
+  const queryStr = `INSERT INTO answers (question_id, body, date, answerer_name, answerer_email, reported, helpfulness) VALUES ($1, $2, to_timestamp(${Date.now()/1000}), $3, $4, $6, $7)`
+  // const queryStrPhotos = `INSERT INTO photos (answer_id, photos) VALUES (--COMPLETE ME--)`
+  // pool.query(queryStr, params)
+  // .then(() => {
+  //   // NEED TO FIND ACCESS TO ANSWER_ID OF THE ANSWER THAT WAS JUST POSTED ABOVE
+  //   // MERGE ANSWERS AND PHOTOS TABLE??
+  //   pool.query(queryStrPhotos, photos)
+  // })
+  .then(() => {
+    res.sendStatus(201);
+  })
+});
 
 // app.put('/qa/questions/:question_id/helpful', (req, res) => {
 
