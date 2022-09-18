@@ -21,3 +21,7 @@ ALTER TABLE answers DROP COLUMN reported;
 -- DATA FROM CSV id,answer_id,url
 -- API FORMAT answers_id, url
 
+-- Use ALTER TABLE to change DATE using to_timestamp(date/1000)
+
+ALTER TABLE questions ALTER COLUMN question_date TYPE TIMESTAMP USING to_timestamp(question_date/1000);
+ALTER TABLE answers ALTER COLUMN date TYPE TIMESTAMP USING to_timestamp(date/1000);
