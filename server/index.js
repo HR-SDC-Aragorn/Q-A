@@ -77,8 +77,6 @@ app.post('/qa/questions', (req, res) => {
   console.log(req.body);
   const params = [req.body.product_id, req.body.body, req.body.name, req.body.email, 0, 0];
   const queryStr = `INSERT INTO questions (product_id, question_body, question_date, asker_name, asker_email, reported, question_helpfulness) VALUES ($1, $2, to_timestamp(${Date.now()/1000}), $3 ,$4, $5, $6)`
-  // error: duplicate key value violates unique constraint "questions_pkey"
-  // Timestamp wrong format?
   pool.query(queryStr, params)
   .then(() => {
     res.sendStatus(201);
@@ -88,41 +86,52 @@ app.post('/qa/questions', (req, res) => {
 app.post('/qa/questions/:question_id/answers', (req, res) => {
   console.log("req.params.question_id", req.params.question_id);
   console.log("req.body", req.body);
-  const params = [req.params.question_id, req.body.body, req.body.name, req.body.email, req.body.photos, 0, 0];
-  const photos = [req.body.photos];
-  const queryStr = `INSERT INTO answers (question_id, body, date, answerer_name, answerer_email, reported, helpfulness) VALUES ($1, $2, to_timestamp(${Date.now()/1000}), $3, $4, $6, $7)`
-  // const queryStrPhotos = `INSERT INTO photos (answer_id, photos) VALUES (--COMPLETE ME--)`
-  // pool.query(queryStr, params)
-  // .then(() => {
-  //   // NEED TO FIND ACCESS TO ANSWER_ID OF THE ANSWER THAT WAS JUST POSTED ABOVE
-  //   // MERGE ANSWERS AND PHOTOS TABLE??
-  //   pool.query(queryStrPhotos, photos)
-  // })
-  .then(() => {
-    res.sendStatus(201);
+  const params = [req.params.question_id, req.body.body, req.body.name, req.body.email, 0, 0];
+  const queryStr = `INSERT INTO answers (question_id, body, date, answerer_name, answerer_email, reported, helpfulness) VALUES ($1, $2, to_timestamp(${Date.now()/1000}), $3, $4, $5, $6) RETURNING id`;
+  pool.query(queryStr, params)
+  .then((result) => {
+    console.log(result.rows[0].id);
+    const photos = [result.rows[0].id, req.body.photos];
+    const queryStrPhotos = `INSERT INTO photos (answer_id, url) VALUES ($1, $2)`;
+    pool.query(queryStrPhotos, photos)
+    .then(() => {
+      res.sendStatus(201);
+    })
   })
 });
 
-// app.put('/qa/questions/:question_id/helpful', (req, res) => {
+app.put('/qa/questions/:question_id/helpful', (req, res) => {
+  console.log("req.params.question_id", req.params.question_id);
+  pool.query(`UPDATE questions SET question_helpfulness = question_helpfulness+1 WHERE question_id = ${req.params.question_id}`)
+  .then(() => {
+    res.sendStatus(204);
+  })
+});
 
-// });
+app.put('/qa/questions/:question_id/report', (req, res) => {
+  console.log("req.params.question_id", req.params.question_id);
+  pool.query(`UPDATE questions SET reported = '1' WHERE question_id = ${req.params.question_id}`)
+  .then(() => {
+    res.sendStatus(204);
+  })
+});
 
-// app.put('/qa/questions/:question_id/report', (req, res) => {
+app.put('/qa/answers/:answer_id/helpful', (req, res) => {
+  console.log("req.params.question_id", req.params.question_id);
+  pool.query(`UPDATE answers SET helpfulness = helpfulness+1 WHERE id = ${req.params.answer_id}`)
+  .then(() => {
+    res.sendStatus(204);
+  })
+});
 
-// });
-
-// app.put('/qa/answers/:answer_id/helpful', (req, res) => {
-
-// });
-
-// app.put('/qa/answers/:answer_id/report', (req, res) => {
-
-// });
-
+app.put('/qa/answers/:answer_id/report', (req, res) => {
+  console.log("req.params.question_id", req.params.question_id);
+  pool.query(`UPDATE answers SET reported = '1' WHERE id = ${req.params.answer_id}`)
+  .then(() => {
+    res.sendStatus(204);
+  })
+});
 
 app.listen(port, () => {
   console.log(`Server listening on port: ${port}`);
 })
-
-
-// NEED EMPTY ARRAY IN PHOTOS WHERE THERE ARE NO PHOTOS
