@@ -27,5 +27,5 @@ CREATE TABLE answers (
 CREATE TABLE photos (
   id serial,
   answer_id serial references answers(id),
-  url VARCHAR(250)
+  url VARCHAR(1000)
 );

@@ -1,7 +1,7 @@
 const express = require('express');
 const pool = require('./db.js');
 const app = express();
-const port = 3000;
+const port = 8080;
 const morgan = require('morgan');
 
 app.use(morgan('dev'));
@@ -17,6 +17,12 @@ app.use(express.json());
 
 app.get('/qa/questions', (req, res) => {
   //console.log(req.query.product_id);
+  const page = req.query.page;
+  const count = req.query.count;
+  const limit = count;
+  const offset = ((req.query.page - 1) * req.query.count);
+  // LIMIT = count
+  // OFFSET = ((req.query.page - 1) * req.query.count);
   pool.query(
     `SELECT
       json_build_object(
@@ -63,7 +69,11 @@ app.get('/qa/questions/:question_id/answers', (req, res) => {
             'date', date,
             'answerer_name', answerer_name,
             'helpfulness', helpfulness,
-            'photos', (SELECT COALESCE (json_agg(photos.url), '[]'::json) FROM photos WHERE answer_id = answers.id)
+            'photos', (SELECT COALESCE (json_agg(
+              json_build_object(
+                'id', id,
+                'url', url
+            )), '[]'::json) FROM photos WHERE answer_id = answers.id)
           )
         ) FROM answers WHERE question_id = ${req.params.question_id})
       )`
@@ -91,12 +101,19 @@ app.post('/qa/questions/:question_id/answers', (req, res) => {
   pool.query(queryStr, params)
   .then((result) => {
     console.log(result.rows[0].id);
-    const photos = [result.rows[0].id, req.body.photos];
-    const queryStrPhotos = `INSERT INTO photos (answer_id, url) VALUES ($1, $2)`;
-    pool.query(queryStrPhotos, photos)
-    .then(() => {
-      res.sendStatus(201);
+    console.log(req.body.photos);
+    req.body.photos.forEach((url) => {
+      const photos = [result.rows[0].id, url];
+      const queryStrPhotos = `INSERT INTO photos (answer_id, url) VALUES ($1, $2)`;
+      pool.query(queryStrPhotos, photos)
+      .then(() => {
+        console.log('Posted');
+      })
     })
+    res.sendStatus(201);
+    // .then(() => {
+    //   res.sendStatus(201);
+    // })
   })
 });
 
@@ -134,4 +151,4 @@ app.put('/qa/answers/:answer_id/report', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server listening on port: ${port}`);
-})
+});
