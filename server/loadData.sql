@@ -25,3 +25,7 @@ ALTER TABLE answers DROP COLUMN reported;
 
 ALTER TABLE questions ALTER COLUMN question_date TYPE TIMESTAMP USING to_timestamp(question_date/1000);
 ALTER TABLE answers ALTER COLUMN date TYPE TIMESTAMP USING to_timestamp(date/1000);
+
+CREATE INDEX question_product_id ON questions (product_id);
+CREATE INDEX answers_question_id ON answers (question_id);
+CREATE INDEX photos_answer_id ON photos (answer_id);
