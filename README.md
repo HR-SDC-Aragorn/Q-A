@@ -1,5 +1,20 @@
 # Q-A
 
+# Systems Design Capstone Project
+
+Project Description
+----------------
+This is the Hack Reactor systems design capstone project that required our group to create an API to support our front-end capstone projects. The goal of the project was to design a database and server to replace the API we used previously. The database and servers are deployed on AWS EC2 instances.
+
+
+Dependencies
+----------------
+- PostgreSQL
+- Express
+- Axios
+- Jest
+- Webpack
+
 ## Authors
 ---
 ### Stephen Ho
