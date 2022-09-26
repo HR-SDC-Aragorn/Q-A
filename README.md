@@ -4,7 +4,7 @@
 
 Project Description
 ----------------
-This is the Hack Reactor systems design capstone project that required our group to create an API to support our front-end capstone projects. The goal of the project was to design a database and server to replace the API we used previously. The database and servers are to be deployed on AWS EC2 instances. Once deployed, we needed to optimize the servers in order to handle a minimum of 100 clients per second with an average response time < 2000ms.
+This is the Hack Reactor systems design capstone project that required our group to create an API to support our front-end capstone projects. The goal of the project was to design a database and server to replace the API we used previously. The database and servers are to be deployed on AWS EC2 t2-micro instances. Once deployed, we needed to optimize the servers in order to handle a minimum of 100 clients per second with an average response time < 2000ms.
 
 Before Optimizations (1000 clients per second for 60s, Avg 1501 ms Response, 89.1% throughput)
 ----------------
